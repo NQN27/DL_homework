@@ -1,0 +1,1 @@
+!pip install torchsummary torchgeometry torch pandas numpy==1.23.0 opencv-python wandb pillow imageio albumentations segmentation-models-pytorch
