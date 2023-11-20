@@ -1,7 +1,7 @@
 import os
 import sys
+import segmentation_models_pytorch as smp
 
-sys.path.append(os.getcwd())
 from PIL import Image
 import numpy as np
 import pandas as pd
@@ -33,30 +33,27 @@ class UNetTestDataClass(Dataset):
     def __len__(self):
         return len(self.images_list)
 
-transform = A.Compose([
-    A.Normalize(mean=(0.485, 0.456, 0.406),std=(0.229, 0.224, 0.225)),
-    A.ToTensorV2(),
-])
-
-path = '/kaggle/input/bkai-igh-neopolyp/test/test/'
-unet_test_dataset = UNetTestDataClass(path, transform)
-test_dataloader = DataLoader(unet_test_dataset, batch_size=8, shuffle=True)
-
-
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# Load the model
-model = model.ResNetUNet(n_classes=3)
+parser = argparse.ArgumentParser(description='PolypSegment Inference')
+parser.add_argument('--path', type=str, help='Path to model checkpoint')
+parser.add_argument('--test_dir', type=str, help='Path to test data')
+parser.add_argument('--mask_dir', type=str, help='Directory path to save predicted masks')
+args = parser.parse_args()
+
+checkpoint = torch.load(args.path, map_location=device)
+new_state_dict = {}
+for key, value in checkpoint['model'].items():
+    new_key = key.replace('module.', '')  # remove prefix 'module.'
+    new_state_dict[new_key] = value
+model = smp.UnetPlusPlus(
+    encoder_name="resnet18",        
+    encoder_weights="imagenet",     
+    in_channels=3,                  
+    classes=3     
+)
 model.to(device)
-
-# Load the pretrained model
-for i, (data, path, h, w) in enumerate(test_dataloader):
-    img = data.cuda().to(device)
-    break
-
-# Load the pretrained model
-check_point = torch.load('model.pth', map_location=device)
-model.load_state_dict(check_point['model'])
+model.load_state_dict(new_state_dict)
 
 color_mapping = {
     0: (0, 0, 0),  # Background
