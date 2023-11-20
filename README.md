@@ -5,11 +5,9 @@
 import requests
 import os
 
-# Replace url with link Google Drive link
-drive_url = 'url'
-'''
-https://drive.google.com/uc?id=116OGkSfEFxcoAfcmAJ4Kj83oFANh7FgA&export=download&confirm=t&uuid=2b4102a9\-5972-416b-97eb-88ba28ee326d&at=AB6BwCAGuaEHjfdCyfAwGaV0E-O9:1700047389408
-'''
+
+drive_url = 'https://drive.google.com/uc?id=116OGkSfEFxcoAfcmAJ4Kj83oFANh7FgA&export=download&confirm=t&uuid=2b4102a9\-5972-416b-97eb-88ba28ee326d&at=AB6BwCAGuaEHjfdCyfAwGaV0E-O9:1700047389408'
+
 # Directory where the downloaded file will be saved
 save_dir = '/kaggle/working/'
 
