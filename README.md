@@ -32,7 +32,7 @@ Then clone my git repo and run
 !mkdir predicted_masks # make dir for mask prediction
 ```
 ```python
-!python /kaggle/working/DL3/infer.py --path '/kaggle/working/model.pth' --test_dir '/kaggle/input/bkai-igh-neopolyp/test/test' --mask_dir '/kaggle/working/predicted_mask'
+!python /kaggle/working/DL_homework/infer.py --path '/kaggle/working/model.pth' --test_dir '/kaggle/input/bkai-igh-neopolyp/test/test' --mask_dir '/kaggle/working/predicted_mask'
 
 # parse args checkpoint, test_dir (please add data of competition), mask_dir
 
