@@ -69,61 +69,64 @@ def mask_to_rgb(mask, color_mapping):
 
     return np.uint8(output)
 
+def mask_to_rgb(mask, color_dict):
+    output = np.zeros((mask.shape[0], mask.shape[1], 3))
+
+    for k in color_dict.keys():
+        output[mask==k] = color_dict[k]
+
+    return np.uint8(output)    
+
 model.eval()
-
-for idx, img_name in enumerate(os.listdir(path)):
-    print(f'Predicted {idx + 1}/200 ...\r', end='')
-    test_img_path = os.path.join(path, img_name)
-
-    img = cv2.imread(test_img_path)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-    width, height = img.shape[1], img.shape[0]
-
-    img = cv2.resize(img, (512, 512))
-
-    # Transform the image
-    transformed_img = transform(image=img)['image'].unsqueeze(0).to(device)
-
+for i in os.listdir(args.test_dir):
+    img_path = os.path.join(args.test_dir, i)
+    ori_img = cv2.imread(img_path)
+    ori_img = cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB)
+    ori_w = ori_img.shape[0]
+    ori_h = ori_img.shape[1]
+    img = cv2.resize(ori_img, (testsize, testsize))
+    transformed = test_transform(image=img)
+    input_img = transformed["image"]
+    input_img = input_img.unsqueeze(0).to(device)
     with torch.no_grad():
-        out_mask = model.forward(transformed_img).squeeze(0).cpu().numpy().transpose(1, 2, 0)  # (256, 256, 3)
-
-    # Resize the mask to the original size
-    out_mask = cv2.resize(out_mask, (width, height))
-    out_mask = np.argmax(out_mask, axis=2)
-
-    # Convert the mask to RGB
-    rgb_mask = mask_to_rgb(out_mask, color_mapping)
-    rgb_mask = cv2.cvtColor(rgb_mask, cv2.COLOR_RGB2BGR)
-
-    # Save the mask
-    save_dir = '/kaggle/working/predict_mask'
-    os.makedirs(save_dir, exist_ok=True)
-    save_path = os.path.join(save_dir, img_name)
-    cv2.imwrite(save_path, rgb_mask)
-
+        output_mask = model.forward(input_img).squeeze(0).cpu().numpy().transpose(1,2,0)
+    mask = cv2.resize(output_mask, (ori_h, ori_w))
+    mask = np.argmax(mask, axis=2)
+    mask_rgb = mask_to_rgb(mask, color_dict)
+    mask_rgb = cv2.cvtColor(mask_rgb, cv2.COLOR_RGB2BGR)
+    cv2.imwrite("predicted_masks/{}".format(i), mask_rgb) 
+    
 def rle_to_string(runs):
     return ' '.join(str(x) for x in runs)
 
 def rle_encode_one_mask(mask):
     pixels = mask.flatten()
-    pixels[pixels > 0] = 255
+    pixels[pixels > 225] = 255
+    pixels[pixels <= 225] = 0
     use_padding = False
     if pixels[0] or pixels[-1]:
         use_padding = True
         pixel_padded = np.zeros([len(pixels) + 2], dtype=pixels.dtype)
         pixel_padded[1:-1] = pixels
         pixels = pixel_padded
-
     rle = np.where(pixels[1:] != pixels[:-1])[0] + 2
     if use_padding:
         rle = rle - 1
     rle[1::2] = rle[1::2] - rle[:-1:2]
+    
     return rle_to_string(rle)
 
+def rle2mask(mask_rle, shape=(3,3)):
+    s = mask_rle.split()
+    starts, lengths = [np.asarray(x, dtype=int) for x in (s[0:][::2], s[1:][::2])]
+    starts -= 1
+    ends = starts + lengths
+    img = np.zeros(shape[0]*shape[1], dtype=np.uint8)
+    for lo, hi in zip(starts, ends):
+        img[lo:hi] = 1
+    return img.reshape(shape).T
 
 def mask2string(dir):
-    ## mask --> string
     strings = []
     ids = []
     ws, hs = [[] for i in range(2)]
@@ -131,13 +134,13 @@ def mask2string(dir):
         id = image_id.split('.')[0]
         path = os.path.join(dir, image_id)
         print(path)
-        img = cv2.imread(path)[:, :, ::-1]
+        img = cv2.imread(path)[:,:,::-1]
         h, w = img.shape[0], img.shape[1]
         for channel in range(2):
             ws.append(w)
             hs.append(h)
             ids.append(f'{id}_{channel}')
-            string = rle_encode_one_mask(img[:, :, channel])
+            string = rle_encode_one_mask(img[:,:,channel])
             strings.append(string)
     r = {
         'ids': ids,
@@ -146,7 +149,7 @@ def mask2string(dir):
     return r
 
 
-MASK_DIR_PATH = '/kaggle/working/predicted_masks'  # change this to the path to your output mask folder
+MASK_DIR_PATH = args.mask_dir # change this to the path to your output mask folder
 dir = MASK_DIR_PATH
 res = mask2string(dir)
 df = pd.DataFrame(columns=['Id', 'Expected'])
