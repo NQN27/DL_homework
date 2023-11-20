@@ -73,11 +73,11 @@ def mask_to_rgb(mask, color_mapping):
 
     return np.uint8(output)
 
-def mask_to_rgb(mask, color_dict):
+def mask_to_rgb(mask, color_mapping):
     output = np.zeros((mask.shape[0], mask.shape[1], 3))
 
-    for k in color_dict.keys():
-        output[mask==k] = color_dict[k]
+    for k in color_mapping.keys():
+        output[mask==k] = color_mapping[k]
 
     return np.uint8(output)    
 
@@ -96,7 +96,7 @@ for i in os.listdir(args.test_dir):
         output_mask = model.forward(input_img).squeeze(0).cpu().numpy().transpose(1,2,0)
     mask = cv2.resize(output_mask, (ori_h, ori_w))
     mask = np.argmax(mask, axis=2)
-    mask_rgb = mask_to_rgb(mask, color_dict)
+    mask_rgb = mask_to_rgb(mask, color_mapping)
     mask_rgb = cv2.cvtColor(mask_rgb, cv2.COLOR_RGB2BGR)
     cv2.imwrite("predicted_masks/{}".format(i), mask_rgb) 
     
