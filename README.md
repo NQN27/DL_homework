@@ -8,7 +8,7 @@ import os
 # Replace url with link Google Drive link
 drive_url = 'url'
 '''
-https://drive.google.com/uc?id=116OGkSfEFxcoAfcmAJ4Kj83oFANh7FgA&export=download&confirm=t&uuid=2b4102a9\-5972-416b-97eb-88ba28ee326d&at=AB6BwCAGuaEHjfdCyfAwGaV0E-O9:1700047389408
+[https://drive.google.com/uc?id=116OGkSfEFxcoAfcmAJ4Kj83oFANh7FgA&export=download&confirm=t&uuid=2b4102a9\-5972-416b-97eb-88ba28ee326d&at=AB6BwCAGuaEHjfdCyfAwGaV0E-O9:1700047389408](https://drive.google.com/file/d/1PCSI9_3qV66mrv3QhdtOJVyVzC-OetLA/view?usp=sharing)
 '''
 # Directory where the downloaded file will be saved
 save_dir = '/kaggle/working/'
@@ -26,7 +26,7 @@ Then install the lib
 ```
 Then clone my git repo and run
 ```python
-!git clone https://github.com/WValleyy/DL3.git 
+!git clone https://github.com/NQN27/DL_homework.git
 ```
 ```python
 !mkdir predicted_masks # make dir for mask prediction
