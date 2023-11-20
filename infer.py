@@ -8,6 +8,7 @@ import pandas as pd
 import torch
 import cv2
 from torch.utils.data import Dataset, DataLoader, random_split
+from albumentations.pytorch.transforms import ToTensorV2
 import albumentations as A
 import model
 import argparse
@@ -42,7 +43,7 @@ parser.add_argument('--mask_dir', type=str, help='Directory path to save predict
 args = parser.parse_args()
 test_transform = A.Compose([
     A.Normalize(mean=(0.485, 0.456, 0.406),std=(0.229, 0.224, 0.225)),
-    A.ToTensorV2(),
+    ToTensorV2(),
 ])
 checkpoint = torch.load(args.path, map_location=device)
 new_state_dict = {}
