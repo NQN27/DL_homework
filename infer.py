@@ -54,7 +54,7 @@ model = smp.UnetPlusPlus(
 )
 model.to(device)
 model.load_state_dict(new_state_dict)
-
+testsize = 384
 color_mapping = {
     0: (0, 0, 0),  # Background
     1: (255, 0, 0),  # Neoplastic polyp
