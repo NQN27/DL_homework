@@ -40,7 +40,10 @@ parser.add_argument('--path', type=str, help='Path to model checkpoint')
 parser.add_argument('--test_dir', type=str, help='Path to test data')
 parser.add_argument('--mask_dir', type=str, help='Directory path to save predicted masks')
 args = parser.parse_args()
-
+test_transform = A.Compose([
+    A.Normalize(mean=(0.485, 0.456, 0.406),std=(0.229, 0.224, 0.225)),
+    A.ToTensorV2(),
+])
 checkpoint = torch.load(args.path, map_location=device)
 new_state_dict = {}
 for key, value in checkpoint['model'].items():
